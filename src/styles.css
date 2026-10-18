@@ -503,6 +503,7 @@ main {
 }
 .close {
   position: absolute;
+  z-index: 4;
   top: 12px;
   right: 12px;
   font-size: 22px;
@@ -811,24 +812,81 @@ button.tag:hover {
   margin: 0;
   list-style: none;
 }
-.books li {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+.books > li {
   padding: 6px 0;
   border-bottom: 1px solid var(--line);
   font-size: 14px;
 }
+/* Sequence, title, then year · length · rating: one column each, so rows line up */
+.book-head {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) max-content 3.5rem;
+  align-items: baseline;
+  column-gap: 10px;
+}
+.book-head > .muted {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.book-rating {
+  text-align: right;
+}
 .books a {
+  min-width: 0;
   text-decoration: none;
+}
+/* Several editions of one place in the series (original, dramatized parts) */
+.book-count {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  vertical-align: 1px;
+  cursor: pointer;
+}
+.book-toggle {
+  cursor: pointer;
+  border-radius: 4px;
+}
+.book-toggle:hover .book-count,
+.book-toggle:focus-visible .book-count {
+  border-color: var(--muted);
+  color: var(--text);
+}
+.book-toggle:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+.book-versions {
+  list-style: none;
+  margin: 6px 0 2px calc(3.5rem + 10px);
+  padding: 0 0 0 10px;
+  border-left: 1px solid var(--line);
+}
+.book-version {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+  font-size: 13px;
+}
+.book-version .muted {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 .books a:hover {
   color: var(--accent);
 }
 .seq {
-  display: inline-block;
-  min-width: 28px;
   color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .community-chips {
   display: flex;
@@ -846,6 +904,92 @@ button.tag:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.community-chips {
+  margin-top: 6px;
+}
+.community-chips .chip {
+  white-space: normal;
+  max-width: 100%;
+}
+.chip-count {
+  opacity: 0.65;
+  font-weight: 600;
+}
+.seg-bar {
+  display: flex;
+  gap: 2px;
+  height: 30px;
+  margin-top: 10px;
+}
+.seg-bar button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1b1b1b;
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0.4;
+}
+.seg-bar button.on {
+  opacity: 1;
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+.seg-bar button:has(.seg-stripes span.hot) {
+  opacity: 1;
+}
+.seg-bar button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+.seg-stripes {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  gap: 1px;
+  background: rgba(0, 0, 0, 0.35);
+}
+.seg-stripes span {
+  min-width: 0;
+  background: var(--c);
+}
+/* Only the hovered label's stripe lights up */
+.seg-stripes span.hot {
+  filter: brightness(1.4);
+  box-shadow: inset 0 0 0 1px var(--text);
+}
+.seg-count {
+  position: relative;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: rgba(18, 19, 23, 0.6);
+  color: #fff;
+}
+.seg-bar .rank-0 { --c: var(--tier-S); }
+.seg-bar .rank-1 { --c: var(--tier-A); }
+.seg-bar .rank-2 { --c: var(--tier-B); }
+.seg-bar .rank-3 { --c: var(--tier-C); }
+.seg-bar .rank-4 { --c: var(--tier-D); }
+.seg-bar .rank-5 { --c: var(--tier-F); }
+.level-legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.level-panel {
+  margin-top: 10px;
+  min-height: 24px;
 }
 .chip.rank-0 { background: var(--tier-S); }
 .chip.rank-1 { background: var(--tier-A); }
@@ -1085,4 +1229,315 @@ button.link {
   gap: 6px;
   color: var(--muted);
   cursor: pointer;
+}
+
+/* Long book lists fold after ten rows; a fade and a button say how many are hidden */
+.books-fold {
+  position: relative;
+}
+.books-fold.folded {
+  max-height: 340px;
+  overflow: hidden;
+}
+.books-fold.folded::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 140px;
+  background: linear-gradient(to bottom, transparent, var(--panel) 70%);
+  pointer-events: none;
+}
+.books-more {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 1;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.books-more:hover {
+  border-color: var(--muted);
+}
+
+/* Drawer header: the hero or the compact layout, switched above it */
+/* Floats over the top-left of the header, so the hero can start at the drawer edge */
+.header-switch {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+  display: flex;
+  gap: 2px;
+  width: fit-content;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+}
+.header-switch button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.header-switch button.on {
+  background: var(--panel-2);
+  color: var(--text);
+}
+/* Bleeds to the drawer's top and side edges (its padding is 24px) */
+.hero {
+  position: relative;
+  overflow: hidden;
+  margin: -24px -24px 0;
+  background: var(--panel-2);
+}
+.hero-backdrop {
+  height: 120px;
+  background: var(--panel-2) center / cover no-repeat;
+  filter: blur(14px) brightness(0.5);
+  transform: scale(1.15);
+}
+.hero-body {
+  position: relative;
+  padding: 0 14px 14px;
+  margin-top: -64px;
+}
+.hero-top {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+.hero-top .cover {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  border: 3px solid var(--panel-2);
+  border-radius: 6px;
+}
+.hero-top h2 {
+  margin: 0 0 2px;
+  font-size: 18px;
+  line-height: 1.2;
+}
+.hero-stats {
+  display: flex;
+  gap: 18px;
+  margin: 14px 0 10px;
+}
+.hero-stats b {
+  display: block;
+  font-size: 17px;
+}
+.hero-stats span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.hero-body .tiers,
+.hero-body .tier-buttons {
+  margin: 10px 0 0;
+}
+.compact-header {
+  margin-top: 44px;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+.compact-header .cover {
+  width: 64px;
+  height: 64px;
+  border-radius: 4px;
+}
+.compact-header h2 {
+  margin: 0 0 2px;
+  font-size: 17px;
+  line-height: 1.2;
+}
+.compact-facts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
+.compact-wide {
+  grid-column: 1 / -1;
+}
+.hero-audible {
+  display: inline-block;
+  margin: 2px 0 4px;
+  font-size: 12px;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.section-head h3 {
+  margin: 12px 0 6px;
+  font-size: 14px;
+}
+.list-status {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+.list-status.ranked {
+  color: var(--tier-D);
+}
+.list-status:hover,
+.list-status:focus-visible {
+  border-color: var(--muted);
+  color: var(--text);
+}
+/* Says what the symbol means: on hover, or after a tap (the open state) */
+.tier-info {
+  position: relative;
+  display: inline-flex;
+}
+.tier-pop {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 5;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-2);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.tier-info:hover .tier-pop,
+.tier-pop.open {
+  display: block;
+}
+/* Matches the "Show all" pill, sitting under the list */
+.books-less {
+  display: block;
+  margin: 12px auto 0;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.books-less:hover {
+  border-color: var(--muted);
+}
+/* Books: list or ratings grid */
+.books-switch {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.books-switch button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.books-switch button.on {
+  background: var(--panel-2);
+  color: var(--text);
+}
+.rating-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 6px;
+}
+.rating-tile {
+  position: relative;
+  aspect-ratio: 1.15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: #0b0d10;
+  cursor: pointer;
+}
+.rating-tile b {
+  font-size: 18px;
+}
+.rating-seq {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+.rating-tile.r-top { background: #4fc3f7; }
+.rating-tile.r-high { background: #26a69a; }
+.rating-tile.r-mid { background: #66bb6a; }
+.rating-tile.r-low { background: #c0a16b; }
+.rating-tile.r-none { background: var(--panel-2); color: var(--muted); }
+.rating-tile {
+  text-decoration: none;
+}
+.rating-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 10px;
+}
+.rating-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.rating-tile.r-top, .swatch.r-top { background: #4fc3f7; }
+.rating-tile.r-high, .swatch.r-high { background: #26a69a; }
+.rating-tile.r-mid, .swatch.r-mid { background: #66bb6a; }
+.rating-tile.r-low, .swatch.r-low { background: #c0a16b; }
+.rating-tile.r-none, .swatch.r-none { background: var(--panel-2); }
+.rating-year {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 10px;
+  opacity: 0.7;
 }
